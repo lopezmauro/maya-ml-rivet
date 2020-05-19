@@ -1,0 +1,5 @@
+NUMPYIOFORMAT = 'csv'
+DATAIOFORMAT = 'json'
+INFILESUFIX = '_inputs'
+OUTFILESUFIX = '_outputs'
+TRFFILESUFIX = '_transforms'
