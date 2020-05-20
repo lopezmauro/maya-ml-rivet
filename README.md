@@ -1,6 +1,6 @@
 # Maya-ml-rivet
 
-Proof of concept of a Maya rivet node done with machine learning.
+This is a proof of concept of a Maya rivet node done with machine learning. Is not meant to be an optimized code
 
 ### Motivation
 
@@ -46,8 +46,44 @@ For model train you will need:
 
 
 ## Running instrucions
+### Getting the data
 
---- Coming soon ...
+In order to get the data you need to specify the driver controls (control that deform the mesh), the driven transforms (controls that will be riveted) and the mesh name. This is an example of getting the data for a bunch of transforms that will be rivetted to the face of [mery](https://www.meryproject.com/) (special thanks to Antonio Francisco Méndez Lora for provide the rig)
+```python
+import sys
+#add the path where the code is to the system path
+sys.path.append(r'D:/dev/MayaNodes/ml_rivet')
+from pyutils import getRivetsSceneData
+mesh = 'Mery_geo_cn_body'
+# the control list will filter itself for the relevant controls
+driverList = [u'Mery_ac_rg_stickyLips_control', u'Mery_ac_lf_stickyLips_control', u'Mery_ac_lf_tinyCorner_control', u'Mery_ac_rg_tinyCorner_control', u'Mery_ac_loLip_01_control', u'Mery_ac_loLip_02_control', u'Mery_ac_loLip_03_control', u'Mery_ac_loLip_04_control', u'Mery_ac_loLip_05_control', u'Mery_ac_upLip_05_control', u'Mery_ac_upLip_04_control', u'Mery_ac_upLip_03_control', u'Mery_ac_upLip_02_control', u'Mery_ac_cn_inout_mouth', u'Mery_ac_upLip_01_control', u'Mery_ac_rg_cheekbone', u'Mery_ac_lf_cheekbone', u'Mery_ac_cn_mouth_move', u'Mery_ac_dw_lf_lip_inout', u'Mery_ac_up_lf_lip_inout', u'Mery_ac_dw_rg_lip_inout', u'Mery_ac_lf_moflete', u'Mery_ac_rg_moflete', u'Mery_ac_up_rg_lip_inout', u'Mery_ac_cn_jaw_control', u'Mery_ac_jaw_front', u'Mery_ac_lf_corner_control', u'Mery_ac_lf_nose', u'Mery_ac_rg_corner_control', u'Mery_ac_rg_nose']
+#I created a bunch of spheres in a group called drivens
+drivenList =[cmds.listRelatives(a, p=1)[0] for a in cmds.listRelatives('drivens', ad=1, type='mesh')]
+folderData = r'D:\projects\ml_rivet\data'
+filePrefix = 'mery_'
+samples = 300
+getRivetsSceneData.getData(mesh, driverList, drivenList, folderData, filePrefix, samples)
+```
+this will generate 3 files: 
+('D:\\projects\\ml_rivet\\data\\mery_inputs.csv', 'D:\\projects\\ml_rivet\\data\\mery_outputs.csv', 'D:\\projects\\ml_rivet\\data\\mery_transforms.json')
+
+## training the model
+On a command line excecute trainModel.py file.
+If you have python 2 and 3 you need to specyfy the python version (py -3), you couls use -h flag to het the command help
+```
+D:\dev\MayaNodes\ml_rivet\pyutils> py -3 trainModel.py -h
+```
+On my example I used
+```
+D:\dev\MayaNodes\ml_rivet\pyutils> py -3 trainModel.py -o "D:/projects/ml_rivet/model" -d "D:/projects/ml_rivet/data" -p "mery_"
+```
+## how evaluate the model accuracy
+Using the flag -v -verbose on the train model command line you can see the accuracy and loss details every 50 samples.
+- The lower the loss, the better a model
+- val_loss is the loss but on unseen samples, if this value dont lower at the same rate than the loss it means that the model over-fitted
+
+### how to get better acurracy
+increasing the **sampling** on getRivetsSceneData.getData (getting more data to the model to learn) or increasing the **epochs** on trainModel (forcing to train more times over the same data)
 
 ## License
 
