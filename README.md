@@ -15,6 +15,10 @@ Train a Linear Regression Model that learn the mesh deformation, then a custom n
 * break the compute dependency to the mesh allowing all deformers compute on the GPU
 * Skip the riveted controls on the training so it own deformation doesn't need to be reversed
 
+Using this method I added 40 rivet to the face of mary rig without any any performance loss
+![](mery_rivets.gif)
+
+
 # Using ml_rivet.mll
 ## Before start
 
