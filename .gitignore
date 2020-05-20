@@ -3,3 +3,4 @@ debug/
 intermediate/
 release/*
 !release/*.mll
+*.pyc

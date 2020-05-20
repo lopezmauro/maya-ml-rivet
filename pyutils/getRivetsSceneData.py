@@ -152,7 +152,7 @@ def getData(mesh, driverList, drivenList, folderData, filePrefix='', samples=300
     for driven in drivenList:
         _logger.info('Getting closest veritces for {}'.format(driven))
         vertices.extend(closestTriangleToTransform(driven, mesh))
-    _logger.info('>>> filtering driver list')
+    _logger.info('> filtering driver list')
     controlsDict = transformData.getAttrDict(driverList)
     resetControls(controlsDict)
     filterdeDrivers = list(filterUnnecesaryTransforms(mesh, driverList, vertices, tol=0.1))
@@ -171,7 +171,7 @@ def getData(mesh, driverList, drivenList, folderData, filePrefix='', samples=300
     localMatrices = list()
     dsplcs = list()
     for i in range(samples):
-        _logger.info('>>> Building sample ' + str(i))
+        _logger.info('> Building sample ' + str(i))
         localMtx = np.array([], dtype=np.double)
         for control in filterdeDrivers:
             for attr, limits in controlsDict[control].iteritems():
@@ -184,6 +184,10 @@ def getData(mesh, driverList, drivenList, folderData, filePrefix='', samples=300
     localMatrices = np.stack(localMatrices)
     dsplcs = np.stack(dsplcs)
     np.savetxt(csvIn, localMatrices)
+    _logger.info("{} saved".format(csvIn))
     np.savetxt(csvOut, dsplcs)
+    _logger.info("{} saved".format(csvOut))
     saveJsonFile(transformsPath, {'drivers': filterdeDrivers, 'drivens': drivenList})
+    _logger.info("{} saved".format(transformsPath))
     resetControls(controlsDict)
+    return csvIn, csvOut, transformsPath
