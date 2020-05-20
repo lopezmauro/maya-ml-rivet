@@ -239,10 +239,11 @@ def saveModelZipData(dataDict, filePath):
         csvPath = os.path.join(dirpath, f'{key}.{constants.NUMPYIOFORMAT}')
         np.savetxt(csvPath, value)
         file_paths.append(csvPath)
-
-    with ZipFile(filePath, 'w') as zip:
+    zipPath = os.path.join(dirpath, 'tempZip.zip')
+    with ZipFile(zipPath, 'w') as zip:
         for each in file_paths:
-            zip.write(each)
+            zip.write(each, arcname=os.path.split(each)[1] )
+    shutil.copy(zipPath, filePath) 
     shutil.rmtree(dirpath)
 
 
@@ -282,7 +283,7 @@ def train(outPath,
     # configurable inputs for test differents parameters (maybe a creating a confusion Matrix)
     lr = .001
     batch_size = 5000
-    extraLayers = 0
+    extraLayers = 1
     sampling = len(inputsTensor)
     logFileName = f"{prefixFileName}model_{int(time.time())}.log"  # gives a dynamic model name
     model_log_file = os.path.join(outPath, logFileName)

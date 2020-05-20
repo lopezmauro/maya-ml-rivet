@@ -26,6 +26,7 @@ SOFTWARE.
 """
 import os
 import json
+import time
 import logging
 import meshData
 import transformData
@@ -133,7 +134,7 @@ def resetControls(controlsDict):
             transformData.setAtributes(control, attr, value=0)
 
 
-def getData(mesh, driverList, drivenList, folderData, filePrefix='', samples=300):
+def getData(mesh, driverList, drivenList, folderData, filePrefix='', samples=1000):
     """set random values to the attributes of the driverList to het the data necessary to
     train the model for predict rivets positions
 
@@ -146,6 +147,9 @@ def getData(mesh, driverList, drivenList, folderData, filePrefix='', samples=300
         samples (int, opitonal): how many random samples to create
             (more smaples, slower but accurated results), default 300
     """
+    
+
+    start = time.time()
     vertices = list()
     if not os.path.exists(folderData):
         os.makedirs(folderData)
@@ -190,4 +194,6 @@ def getData(mesh, driverList, drivenList, folderData, filePrefix='', samples=300
     saveJsonFile(transformsPath, {'drivers': filterdeDrivers, 'drivens': drivenList})
     _logger.info("{} saved".format(transformsPath))
     resetControls(controlsDict)
+    end = time.time()
+    _logger.info('Procces ended in {} sec'.format(end - start))
     return csvIn, csvOut, transformsPath
