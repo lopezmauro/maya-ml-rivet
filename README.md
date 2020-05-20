@@ -1,6 +1,7 @@
 # Maya-ml-rivet
 
-This is a proof of concept of a Maya rivet node done with machine learning. Is not meant to be an optimized code
+This is a proof of concept of a Maya rivet node done with machine learning. Is not meant to be an optimized code.
+THIS IS A BETA RELEASE USE AT YOUR OWN RISK
 
 ### Motivation
 
