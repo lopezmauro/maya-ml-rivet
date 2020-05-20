@@ -77,7 +77,38 @@ On my example I used
 ```
 D:\dev\MayaNodes\ml_rivet\pyutils> py -3 trainModel.py -o "D:/projects/ml_rivet/model" -d "D:/projects/ml_rivet/data" -p "mery_"
 ```
-## how evaluate the model accuracy
+## Loading the model back to maya
+In order to load the model back you need:
+* to load the plugin
+* create a ml_rivet node
+* set the modelFile and dataFile attributes
+* connect the drivers and the drivens (the transforms.json saved with the data has that information)
+
+```python
+import sys
+sys.path.append(r'D:\dev\MayaNodes\ml_rivet')
+from pyutils import getRivetsSceneData
+modelFile = r"D:/projects/ml_rivet/model/mery_model.onnx"
+dataFile = r"D:/projects/ml_rivet/model/mery_modelData.zip"
+dataJson = r"D:/projects/ml_rivet/data/mery_transforms.json"
+cmds.file(new=1,f=1)
+cmds.unloadPlugin(r'ml_rivet.mll')
+cmds.file('D:/projects/ml_rivet/Mery_v3.5_for_2015_rivetsStart.mb', o=1, f=1)
+cmds.loadPlugin(r'D:\dev\MayaNodes\ml_rivet\release\ml_rivet.mll')
+node = cmds.createNode('ml_rivet')
+cmds.setAttr('{}.modelFile'.format(node),modelFile , type="string")
+cmds.setAttr('{}.dataFile'.format(node), dataFile , type="string")
+
+jsonData = getRivetsSceneData.readJsonFile(dataJson)
+for x, ctrl in enumerate(jsonData.get('drivers')):
+    cmds.connectAttr('{}.xformMatrix'.format(ctrl), '{}.inputs[{}]'.format(node,x))
+for i, drv in enumerate(jsonData.get('drivens')):
+    dec = cmds.createNode('decomposeMatrix')
+    cmds.connectAttr('{}.outputs[{}]'.format(node, i), '{}.inputMatrix'.format(dec))
+    cmds.connectAttr('{}.outputTranslate'.format(dec), '{}.translate'.format(drv))
+```
+
+### how evaluate the model accuracy
 Using the flag -v -verbose on the train model command line you can see the accuracy and loss details every 50 samples.
 - The lower the loss, the better a model
 - val_loss is the loss but on unseen samples, if this value dont lower at the same rate than the loss it means that the model over-fitted
