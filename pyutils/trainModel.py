@@ -41,15 +41,14 @@ from tqdm import tqdm
 import constants
 _logger = logging.getLogger(__name__)
 
-
 DEVICE = torch.device("cpu")
 
 if torch.cuda.is_available():
     DEVICE = torch.device("cuda:0")
     torch.cuda.empty_cache()
-    _logger.info("Running on the GPU")
+    _logger.info("Running on the GPU\n")
 else:
-    _logger.info("Running on the CPU")
+    _logger.info("Running on the CPU\n")
 
 
 class LRModel(nn.Module):
@@ -221,7 +220,7 @@ def rivetModelFit(net, X_data, y_data, batch_size, epochs, lr, valPercent, model
                 val_acc, val_loss = testPass(net, test_X, test_y, loss_func, optimizer, size=100)
                 log = f'"epoch":{ep}, "acc":{round(acc, 6)}, "loss":{round(float(loss), 6)}'
                 log += f', "val_acc":{round(val_acc, 6)}, "val_loss":{round(float(val_loss), 6)}'
-                _logger.info(log)
+                _logger.debug(log)
                 if not model_log_file or not os.path.exists(model_log_file):
                     continue
                 with open(model_log_file, "a") as f:
@@ -279,6 +278,7 @@ def train(outPath,
                 }
     zipPath = os.path.join(outPath, f'{prefixFileName}modelData.zip')
     saveModelZipData(dataDict, zipPath)
+    _logger.info(f'{zipPath} saved')
     # configurable inputs for test differents parameters (maybe a creating a confusion Matrix)
     lr = .001
     batch_size = 5000
@@ -292,16 +292,34 @@ def train(outPath,
                   batch_size, epochs, lr, valPercent, model_log_file)
     dummy_input = torch.randn(1, inputsTensor.shape[1]).to(DEVICE)
     # save model
-    torch.onnx.export(model.float(), dummy_input, os.path.join(outPath, f'{prefixFileName}model.onnx'))
+    modelPath =  os.path.join(outPath, f'{prefixFileName}model.onnx')
+    torch.onnx.export(model.float(), dummy_input, modelPath)
+    _logger.info(f'{modelPath} saved')
 
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 if __name__ == "__main__":
     import argparse
+    _logger.addHandler(logging.StreamHandler())
     parser = argparse.ArgumentParser(description='Train Model for used in ml_rivet')
     parser.add_argument('-o','--outPath', help='Folder path where the model will be saved', required=True)
     parser.add_argument('-d','--dataPath', help='Path where the data exists', required=True)
     parser.add_argument('-p','--prefixFileName', help='needed if the data has a prefix name', required=False)
+    parser.add_argument('-v','--verbose', help='print out log', type=str2bool, nargs='?',
+                        const=True, default=False)
     parser.add_argument('-e','--epochs', help='needed if the data has a prefix name', required=False, 
                                 nargs='?', const=1000, type=int, default=1000)
     args = parser.parse_args()
+    if args.verbose:
+        _logger.setLevel(logging.DEBUG)
+    else:
+        _logger.setLevel(logging.INFO)
     train(outPath=args.outPath, dataPath=args.dataPath, prefixFileName=args.prefixFileName, epochs=args.epochs)
