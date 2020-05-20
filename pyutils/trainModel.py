@@ -182,7 +182,7 @@ def testPass(model, X_data, y_data, loss_func, optimizer, size=32):
     Returns:
         tuple: (accuracy, loss) values to mesure the model with unseen data
     """
-    test_X, test_y = shufleLists(X_data, y_data)
+    test_X, test_y = shufleLists((X_data, y_data))
     X, y = test_X[:size], test_y[:size]
     val_acc, val_loss = fwdPass(model, X, y, loss_func, optimizer)
     return val_acc, val_loss
@@ -206,14 +206,14 @@ def rivetModelFit(net, X_data, y_data, batch_size, epochs, lr, valPercent, model
     val_size = int(len(X_data) * valPercent)
     optimizer = optim.Adam(net.parameters(), lr=lr)
     loss_func = nn.MSELoss()
-    for ep in range(epochs):
-        X_shufl, y_shufl = shufleLists(X_data, y_data)
+    for ep in tqdm(range(epochs)):
+        X_shufl, y_shufl = shufleLists((X_data, y_data))
         train_X = X_shufl[:-val_size]
         train_y = y_shufl[:-val_size]
         test_X = X_shufl[-val_size:]
         test_y = y_shufl[-val_size:]
 
-        for i in tqdm(range(0, len(train_X), batch_size)):
+        for i in range(0, len(train_X), batch_size):
             batch_X = train_X[i:i + batch_size]
             batch_y = train_y[i:i + batch_size]
             acc, loss = fwdPass(net, batch_X, batch_y, loss_func, optimizer, train=True)
@@ -295,4 +295,13 @@ def train(outPath,
     torch.onnx.export(model.float(), dummy_input, os.path.join(outPath, f'{prefixFileName}model.onnx'))
 
 
-train(outPath=r'D:/projects/ml_rivet/model', dataPath=r'D:/projects/ml_rivet/data', prefixFileName='mery_')
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='Train Model for used in ml_rivet')
+    parser.add_argument('-o','--outPath', help='Folder path where the model will be saved', required=True)
+    parser.add_argument('-d','--dataPath', help='Path where the data exists', required=True)
+    parser.add_argument('-p','--prefixFileName', help='needed if the data has a prefix name', required=False)
+    parser.add_argument('-e','--epochs', help='needed if the data has a prefix name', required=False, 
+                                nargs='?', const=1000, type=int, default=1000)
+    args = parser.parse_args()
+    train(outPath=args.outPath, dataPath=args.dataPath, prefixFileName=args.prefixFileName, epochs=args.epochs)

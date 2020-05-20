@@ -1,5 +1,5 @@
 NUMPYIOFORMAT = 'csv'
 DATAIOFORMAT = 'json'
-INFILESUFIX = '_inputs'
-OUTFILESUFIX = '_outputs'
-TRFFILESUFIX = '_transforms'
+INFILESUFIX = 'inputs'
+OUTFILESUFIX = 'outputs'
+TRFFILESUFIX = 'transforms'
