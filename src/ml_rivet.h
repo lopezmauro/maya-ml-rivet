@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
 #include "CNTKLibrary.h"
 #include <string.h>
 #include <fstream>
@@ -52,23 +53,6 @@ SOFTWARE.
 #define OUTSTD "out_std.csv"
 
 
-class ModelCache
-{
-	std::wstring modelPath;
-	std::wstring dataPath;
-	CNTK::FunctionPtr modelPtr;
-	std::map<std::string, std::valarray<float>> dataMap;
-
-public:
-	CNTK::FunctionPtr getModel(const std::wstring newFilePath);
-	std::map<std::string, std::valarray<float>> getDataMap(const std::wstring inDataPath);
-
-
-	ModelCache();
-	~ModelCache();
-};
-
-
 class mlRivet : public MPxNode
 {
 public:
@@ -81,6 +65,9 @@ public:
 	static  void*		creator();
 	static  MStatus		initialize();
 
+	CNTK::FunctionPtr getModel(const std::wstring newFilePath);
+	std::map<std::string, std::valarray<float>> getDataMap(const std::wstring inDataPath);
+
 public:
 	
 	static	MObject		deviceType;			// GPU or CPU.
@@ -91,7 +78,13 @@ public:
 	static	MObject		matrix;
 	static	MObject		outputs;
 
-	static	ModelCache	modelCache;			// Cache for loading model only once.
 	static  bool		_debug;
 	static	MTypeId		id;
+
+private:
+	std::wstring modelPath;
+	std::wstring dataPath;
+	CNTK::FunctionPtr modelPtr;
+	std::map<std::string, std::valarray<float>> dataMap;
 };
+

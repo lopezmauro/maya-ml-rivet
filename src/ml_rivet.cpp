@@ -37,7 +37,6 @@ MObject		mlRivet::inputs;
 MObject		mlRivet::matrix;
 MObject		mlRivet::outputs;
 
-ModelCache	mlRivet::modelCache;
 bool	mlRivet::_debug;
 
 mlRivet::mlRivet() {}
@@ -101,7 +100,7 @@ MStatus mlRivet::compute(const MPlug& plug, MDataBlock& data)
 	std::wstring inDataPath = inDataFilePath_h.asString().asWChar();
 	
 	
-	std::map<std::string, std::valarray<float>> inDataMap = modelCache.getDataMap(inDataPath);
+	std::map<std::string, std::valarray<float>> inDataMap = getDataMap(inDataPath);
 	MMatrix matrix;
 	std::vector<float> rawInputX;
 	std::vector<float> rawMtrx;
@@ -149,7 +148,7 @@ MStatus mlRivet::compute(const MPlug& plug, MDataBlock& data)
 	if (deviceTypeInt == 1) {
 		const CNTK::DeviceDescriptor device = CNTK::DeviceDescriptor::CPUDevice();
 	}
-	CNTK::FunctionPtr modelFunc = modelCache.getModel(modelPath);
+	CNTK::FunctionPtr modelFunc = getModel(modelPath);
 	
 	if (modelFunc == NULL) {
 		cout << "Unable to read Model" << endl;
@@ -205,7 +204,6 @@ MStatus mlRivet::compute(const MPlug& plug, MDataBlock& data)
 
 void* mlRivet::creator()
 {
-	modelCache = ModelCache();
 	return new mlRivet();
 }
 
@@ -262,10 +260,7 @@ MStatus mlRivet::initialize()
 }
 
 
-ModelCache::ModelCache() {}
-ModelCache::~ModelCache() {}
-
-CNTK::FunctionPtr ModelCache::getModel(const std::wstring newFilePath)
+CNTK::FunctionPtr mlRivet::getModel(const std::wstring newFilePath)
 {
 	if (newFilePath == modelPath)
 	{
@@ -280,7 +275,7 @@ CNTK::FunctionPtr ModelCache::getModel(const std::wstring newFilePath)
 	}
 }
 
-std::map<std::string, std::valarray<float>> ModelCache::getDataMap(const std::wstring inDataPath)
+std::map<std::string, std::valarray<float>> mlRivet::getDataMap(const std::wstring inDataPath)
 {
 	if (dataPath == inDataPath)
 	{
@@ -296,9 +291,3 @@ std::map<std::string, std::valarray<float>> ModelCache::getDataMap(const std::ws
 		return dataMap;
 	}
 }
-
-
-
-
-
-
