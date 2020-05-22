@@ -54,14 +54,11 @@ def getMeshData(meshName):
 
 def getMeshVertexFaces(faceVertices):
     vtxDict = dict()
-    result = list()
     for face, vertices in enumerate(faceVertices):
         for vtx in vertices:
             vtxDict.setdefault(vtx, []).append(face)
     # forcing sorted range instead of iterate unsorted items
-    for i in range(len(vtxDict)):
-        result.append(vtxDict[i])
-    return result
+    return [vtxDict[i] for i in range(len(vtxDict))]
 
 
 def getClosestTriangle(point, points, vertexFaces, faceVertices):
