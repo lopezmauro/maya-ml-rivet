@@ -1,8 +1,5 @@
 
-/*This module is mean to be used to get the main training data for train the model to be used on ml_rivets.mll node
-This code is to be used on maya with numpy library
-
-MIT License
+/*MIT License
 
 Copyright (c) 2020 Mauro Lopez
 
@@ -86,5 +83,5 @@ private:
 	std::wstring dataPath;
 	CNTK::FunctionPtr modelPtr;
 	std::map<std::string, std::valarray<float>> dataMap;
+	std::vector<MVector> prevAim;
 };
-

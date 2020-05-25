@@ -1,7 +1,4 @@
-/*This module is mean to be used to get the main training data for train the model to be used on ml_rivets.mll node
-This code is to be used on maya with numpy library
-
-MIT License
+/*MIT License
 
 Copyright (c) 2020 Mauro Lopez
 
@@ -69,12 +66,19 @@ std::valarray<float> featDenorm(std::valarray<float>  features_norm, std::valarr
 	std::valarray<float> features = (features_norm * std) + mean;
 	return features;
 }
-MMatrix getMatrixFromTriangle(MVector vectorA, MVector vectorB, MVector vectorC)
+MMatrix getMatrixFromTriangle(MVector vectorA, MVector vectorB, MVector vectorC, MVector &prevAim)
 {
-	MVector ba = vectorB - vectorA;
-	MVector ca = vectorC - vectorA;
+	MVector vx = vectorA + MVector(1, 0, 0);
+	MVector vy = vectorB + MVector(0, 1, 0);
+	MVector vz = vectorC + MVector(0, 0, 1);
+	MVector ba = vy - vx;
+	MVector ca = vz - vx;
 	MVector normal_vector = (ca.normal() ^ ba.normal()).normal();
 	MVector tangent_vector = (ba.normal() ^ normal_vector).normal();
+	if (tangent_vector*prevAim < 0) {
+		tangent_vector *= -1;
+	}
+	prevAim = tangent_vector;
 	MVector cross_vector = (tangent_vector ^ normal_vector).normal();
 	MVector position = vectorA;
 	MMatrix matrix;
@@ -185,13 +189,21 @@ MStatus mlRivet::compute(const MPlug& plug, MDataBlock& data)
 	MArrayDataHandle outputs_h = data.outputArrayValue(outputs);
 	MArrayDataBuilder builder = outputs_h.builder(&stat);
 	MMatrix outMatrix;
+	if (prevAim.size() <= 1) {
+		MVector aim;
+		prevAim.clear();
 	for (int i = 0; i < matrixNum; i++) {
-		int j = 9 * i;
+			prevAim.push_back(aim);
+		}
+	}
+	int j;
+	for (int i = 0; i < matrixNum; i++) {
+		j = 9 * i;
 		MDataHandle outHandle = builder.addElement(i);
 		MVector vectorA(prediction[0 + j], prediction[1 + j], prediction[2 + j]);
 		MVector vectorB(prediction[3 + j], prediction[4 + j], prediction[5 + j]);
 		MVector vectorC(prediction[6 + j], prediction[7 + j], prediction[8 + j]);
-		outMatrix = getMatrixFromTriangle(vectorA, vectorB, vectorC);
+		outMatrix = getMatrixFromTriangle(vectorA, vectorB, vectorC, prevAim[i]);
 		//outMatrix[3][0] = prediction[6 + j]; outMatrix[3][1] = prediction[7 + j]; outMatrix[3][2] = prediction[8 + j];
 		outHandle.set(outMatrix);
 	}
@@ -214,7 +226,7 @@ MStatus mlRivet::initialize()
 	MFnMatrixAttribute  mAttr;
 	MFnEnumAttribute        enumAttr;
 	MStatus	stat;
-	deviceType = enumAttr.create("deviceType", "dt", 1, &stat);
+	deviceType = enumAttr.create("deviceType", "dt", 0, &stat);
 	stat = enumAttr.addField("GPU", 0);
 	stat = enumAttr.addField("CPU", 1);
 	enumAttr.setHidden(false);
@@ -238,7 +250,6 @@ MStatus mlRivet::initialize()
 	mAttr.setConnectable(true);
 	stat = addAttribute(inputs);
 
-	//output = mAttr.create("output", "out", MFnMatrixAttribute::kFloat);
 	outputs = mAttr.create("outputs", "outputs");
 	mAttr.setWritable(false);
 	mAttr.setArray(true);
@@ -246,15 +257,9 @@ MStatus mlRivet::initialize()
 	mAttr.setConnectable(true);
 	stat = addAttribute(outputs);
 	
-
-	//outputs = cAttr.create("outputs", "outputs");
-	//cAttr.addChild(outputs);
-
 	stat = attributeAffects(deviceType, outputs);
 	stat = attributeAffects(inDataFilePath, outputs);
 	stat = attributeAffects(inputs, outputs);
-
-
 
 	return MS::kSuccess;
 }

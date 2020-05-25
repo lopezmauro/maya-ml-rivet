@@ -111,6 +111,7 @@ for i, drv in enumerate(jsonData.get('drivens')):
     dec = cmds.createNode('decomposeMatrix')
     cmds.connectAttr('{}.outputs[{}]'.format(node, i), '{}.inputMatrix'.format(dec))
     cmds.connectAttr('{}.outputTranslate'.format(dec), '{}.translate'.format(drv))
+    cmds.connectAttr('{}.outputRotate'.format(dec), '{}.rotate'.format(drv))
 ```
 
 ### how evaluate the model accuracy
